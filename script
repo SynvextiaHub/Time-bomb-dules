@@ -1,1 +1,355 @@
+--[[
+	Join server popup
+	Place this LocalScript in StarterGui or StarterPlayerScripts.
+]]
 
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local GuiService = game:GetService("GuiService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local INVITE = "https://discord.gg/2yKgQ39TfV"
+local MESSAGE = "Join the server for the updated script url thx"
+
+--// Synvextia logo (upload your png in Roblox Creator Store -> Inventory, then paste the asset id)
+local ICON_IMAGE = "rbxassetid://0"
+
+--// palette
+local COL_BG_TOP = Color3.fromRGB(24, 25, 32)
+local COL_BG_BOTTOM = Color3.fromRGB(12, 12, 17)
+local COL_PANEL_TOP = Color3.fromRGB(48, 50, 58)
+local COL_PANEL_BOTTOM = Color3.fromRGB(34, 36, 42)
+local COL_ACCENT = Color3.fromRGB(88, 101, 242)
+local COL_ACCENT_HOVER = Color3.fromRGB(108, 120, 255)
+local COL_SUCCESS = Color3.fromRGB(35, 134, 78)
+local COL_TEXT = Color3.fromRGB(245, 246, 250)
+local COL_SUBTEXT = Color3.fromRGB(160, 165, 185)
+
+--// services
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "JoinServerPopup"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 9999
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = playerGui
+
+--// backdrop
+local overlay = Instance.new("Frame")
+overlay.Name = "Overlay"
+overlay.Size = UDim2.fromScale(1, 1)
+overlay.BackgroundColor3 = COL_BG_BOTTOM
+overlay.BackgroundTransparency = 0.25
+overlay.BorderSizePixel = 0
+overlay.ZIndex = 1
+overlay.Parent = screenGui
+
+local backdropGradient = Instance.new("UIGradient")
+backdropGradient.Color = ColorSequence.new(COL_BG_TOP, COL_BG_BOTTOM)
+backdropGradient.Rotation = 45
+backdropGradient.Parent = overlay
+
+--// fade in
+overlay.BackgroundTransparency = 1
+TweenService:Create(
+	overlay,
+	TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+	{ BackgroundTransparency = 0.25 }
+):Play()
+
+--// panel
+local panel = Instance.new("Frame")
+panel.Name = "Panel"
+panel.AnchorPoint = Vector2.new(0.5, 0.5)
+panel.Position = UDim2.fromScale(0.5, 0.5)
+panel.Size = UDim2.new(0.9, 0, 0, 320)
+panel.BackgroundColor3 = COL_PANEL_BOTTOM
+panel.BorderSizePixel = 0
+panel.ClipsDescendants = false
+panel.ZIndex = 2
+panel.Parent = overlay
+
+local panelSize = Instance.new("UISizeConstraint")
+panelSize.MaxSize = Vector2.new(640, 320)
+panelSize.MinSize = Vector2.new(300, 320)
+panelSize.Parent = panel
+
+local panelGradient = Instance.new("UIGradient")
+panelGradient.Color = ColorSequence.new(COL_PANEL_TOP, COL_PANEL_BOTTOM)
+panelGradient.Rotation = 90
+panelGradient.Parent = panel
+
+local panelCorner = Instance.new("UICorner")
+panelCorner.CornerRadius = UDim.new(0, 18)
+panelCorner.Parent = panel
+
+local panelStroke = Instance.new("UIStroke")
+panelStroke.Color = Color3.fromRGB(255, 255, 255)
+panelStroke.Transparency = 0.85
+panelStroke.Thickness = 1.5
+panelStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+panelStroke.ZIndex = 2
+panelStroke.Parent = panel
+
+local panelShadow = Instance.new("ImageLabel")
+panelShadow.Name = "Shadow"
+panelShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+panelShadow.Position = UDim2.fromScale(0.5, 0.5)
+panelShadow.Size = UDim2.fromScale(1, 1)
+panelShadow.BackgroundTransparency = 1
+panelShadow.Image = "rbxassetid://5554236805"
+panelShadow.ImageColor3 = Color3.new(0, 0, 0)
+panelShadow.ImageTransparency = 0.55
+panelShadow.ScaleType = Enum.ScaleType.Slice
+panelShadow.SliceCenter = Rect.new(23, 23, 277, 277)
+panelShadow.ZIndex = 1
+panelShadow.Parent = panel
+
+--// accent bar
+local accent = Instance.new("Frame")
+accent.Name = "Accent"
+accent.Size = UDim2.new(1, -80, 0, 6)
+accent.Position = UDim2.new(0.5, 0, 0, 26)
+accent.AnchorPoint = Vector2.new(0.5, 0)
+accent.BackgroundColor3 = COL_ACCENT
+accent.BorderSizePixel = 0
+accent.ZIndex = 3
+accent.Parent = panel
+
+local accentCorner = Instance.new("UICorner")
+accentCorner.CornerRadius = UDim.new(1, 0)
+accentCorner.Parent = accent
+
+local accentGradient = Instance.new("UIGradient")
+accentGradient.Color = ColorSequence.new(Color3.fromRGB(120, 130, 255), COL_ACCENT)
+accentGradient.Parent = accent
+
+--// discord icon
+local iconHolder = Instance.new("Frame")
+iconHolder.Name = "Icon"
+iconHolder.AnchorPoint = Vector2.new(0.5, 0)
+iconHolder.Position = UDim2.new(0.5, 0, 0, 48)
+iconHolder.Size = UDim2.fromOffset(72, 72)
+iconHolder.BackgroundColor3 = Color3.fromRGB(18, 19, 24)
+iconHolder.BorderSizePixel = 0
+iconHolder.ZIndex = 3
+iconHolder.Parent = panel
+
+local iconCorner = Instance.new("UICorner")
+iconCorner.CornerRadius = UDim.new(0, 20)
+iconCorner.Parent = iconHolder
+
+local iconStroke = Instance.new("UIStroke")
+iconStroke.Color = COL_ACCENT
+iconStroke.Transparency = 0.15
+iconStroke.Thickness = 2
+iconStroke.ZIndex = 3
+iconStroke.Parent = iconHolder
+
+local iconScale = Instance.new("UIScale")
+iconScale.Scale = 1
+iconScale.Parent = iconHolder
+
+local icon = Instance.new("ImageLabel")
+icon.Name = "SynvextiaLogo"
+icon.AnchorPoint = Vector2.new(0.5, 0.5)
+icon.Position = UDim2.fromScale(0.5, 0.5)
+icon.Size = UDim2.fromScale(1, 1)
+icon.BackgroundTransparency = 1
+icon.Image = ICON_IMAGE
+icon.ImageColor3 = Color3.new(1, 1, 1)
+icon.ImageTransparency = 1
+icon.ScaleType = Enum.ScaleType.Fit
+icon.ZIndex = 4
+icon.Parent = iconHolder
+
+TweenService:Create(
+	icon,
+	TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+	{ ImageTransparency = 0 }
+):Play()
+
+--// message
+local message = Instance.new("TextLabel")
+message.Name = "Message"
+message.AnchorPoint = Vector2.new(0.5, 0)
+message.Position = UDim2.new(0.5, 0, 0, 132)
+message.Size = UDim2.new(1, -50, 0, 54)
+message.BackgroundTransparency = 1
+message.Text = MESSAGE
+message.TextColor3 = COL_TEXT
+message.TextWrapped = true
+message.TextSize = 30
+message.Font = Enum.Font.GothamBold
+message.TextXAlignment = Enum.TextXAlignment.Center
+message.ZIndex = 3
+message.Parent = panel
+
+local messageSize = Instance.new("UITextSizeConstraint")
+messageSize.MinTextSize = 16
+messageSize.MaxTextSize = 30
+messageSize.Parent = message
+
+--// link preview (also acts as a manual copy fallback)
+local linkBox = Instance.new("TextBox")
+linkBox.Name = "Link"
+linkBox.AnchorPoint = Vector2.new(0.5, 0)
+linkBox.Position = UDim2.new(0.5, 0, 0, 196)
+linkBox.Size = UDim2.new(1, -110, 0, 34)
+linkBox.BackgroundColor3 = Color3.fromRGB(20, 21, 26)
+linkBox.BackgroundTransparency = 0.25
+linkBox.BorderSizePixel = 0
+linkBox.ClearTextOnFocus = false
+linkBox.Font = Enum.Font.Code
+linkBox.PlaceholderText = INVITE
+linkBox.Text = ""
+linkBox.TextColor3 = COL_SUBTEXT
+linkBox.TextSize = 15
+linkBox.TextXAlignment = Enum.TextXAlignment.Center
+linkBox.ZIndex = 3
+linkBox.Parent = panel
+
+local linkCorner = Instance.new("UICorner")
+linkCorner.CornerRadius = UDim.new(0, 8)
+linkCorner.Parent = linkBox
+
+local linkHint = Instance.new("TextLabel")
+linkHint.Name = "LinkHint"
+linkHint.AnchorPoint = Vector2.new(0.5, 0)
+linkHint.Position = UDim2.new(0.5, 0, 0, 232)
+linkHint.Size = UDim2.new(1, -40, 0, 16)
+linkHint.BackgroundTransparency = 1
+linkHint.Text = "click the link above to select it manually"
+linkHint.TextColor3 = COL_SUBTEXT
+linkHint.TextTransparency = 0.45
+linkHint.TextSize = 13
+linkHint.Font = Enum.Font.Gotham
+linkHint.ZIndex = 3
+linkHint.Parent = panel
+
+--// button
+local button = Instance.new("TextButton")
+button.Name = "JoinButton"
+button.AnchorPoint = Vector2.new(0.5, 0)
+button.Position = UDim2.new(0.5, 0, 0, 254)
+button.Size = UDim2.new(1, -100, 0, 52)
+button.BackgroundColor3 = COL_ACCENT
+button.BorderSizePixel = 0
+button.Text = "Join server"
+button.TextColor3 = Color3.new(1, 1, 1)
+button.TextSize = 26
+button.TextStrokeTransparency = 0.85
+button.Font = Enum.Font.GothamBold
+button.AutoButtonColor = false
+button.Selectable = false
+button.ZIndex = 3
+button.Parent = panel
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 14)
+buttonCorner.Parent = button
+
+local buttonGradient = Instance.new("UIGradient")
+buttonGradient.Color = ColorSequence.new(COL_ACCENT_HOVER, COL_ACCENT)
+buttonGradient.Rotation = 90
+buttonGradient.Offset = Vector2.new(0, 0.2)
+buttonGradient.Parent = button
+
+local buttonScale = Instance.new("UIScale")
+buttonScale.Scale = 1
+buttonScale.Parent = button
+
+button.MouseEnter:Connect(function()
+	TweenService:Create(buttonScale, TweenInfo.new(0.12), { Scale = 1.04 }):Play()
+	TweenService:Create(button, TweenInfo.new(0.12), { BackgroundColor3 = COL_ACCENT_HOVER }):Play()
+end)
+
+button.MouseLeave:Connect(function()
+	TweenService:Create(buttonScale, TweenInfo.new(0.12), { Scale = 1 }):Play()
+	TweenService:Create(button, TweenInfo.new(0.12), { BackgroundColor3 = COL_ACCENT }):Play()
+end)
+
+--// clipboard: try every method available, count the successes
+local function copyToClipboard(text: string): number
+	local ok = 0
+
+	if type(setclipboard) == "function" then
+		ok += pcall(setclipboard, text) and 1 or 0
+	end
+	if type(writeclipboard) == "function" then
+		ok += pcall(writeclipboard, text) and 1 or 0
+	end
+	ok += pcall(function()
+		GuiService:SetClipboard(text)
+	end) and 1 or 0
+	ok += pcall(function()
+		GuiService:CopyToClipboard(text)
+	end) and 1 or 0
+	ok += pcall(function()
+		player:SetClipboard(text)
+	end) and 1 or 0
+
+	return ok
+end
+
+local busy = false
+
+button.MouseButton1Click:Connect(function()
+	if busy then
+		return
+	end
+	busy = true
+
+	local copied = copyToClipboard(INVITE)
+
+	-- keyboard fallback: put the link in a focused box so ctrl+v still works
+	linkBox.Text = INVITE
+	linkBox:ReleaseFocus()
+
+	if copied > 0 then
+		button.Text = "Copied to clipboard!"
+		buttonGradient.Color = ColorSequence.new(
+			Color3.fromRGB(52, 168, 104),
+			COL_SUCCESS
+		)
+		button.BackgroundColor3 = COL_SUCCESS
+	else
+		button.Text = "Press CTRL+V"
+		buttonGradient.Color = ColorSequence.new(
+			Color3.fromRGB(120, 130, 255),
+			COL_ACCENT
+		)
+		button.BackgroundColor3 = COL_ACCENT
+	end
+
+	TweenService:Create(icon, TweenInfo.new(0.2), { ImageTransparency = 0.45 }):Play()
+	task.wait(0.15)
+	TweenService:Create(icon, TweenInfo.new(0.2), { ImageTransparency = 0 }):Play()
+
+	task.wait(1.6)
+
+	button.Text = "Join server"
+	button.BackgroundColor3 = COL_ACCENT
+	buttonGradient.Color = ColorSequence.new(COL_ACCENT_HOVER, COL_ACCENT)
+	linkBox.Text = ""
+	busy = false
+end)
+
+--// idle pulse so the button is hard to miss
+task.spawn(function()
+	while screenGui.Parent do
+		local pulse = math.sin(tick() * 2) * 0.5 + 0.5
+		buttonGradient.Offset = Vector2.new(0, 0.2 + pulse * 0.6)
+		iconScale.Scale = 1 + pulse * 0.06
+		RunService.RenderStepped:Wait()
+	end
+end)
+
+--// keep it on screen after respawns
+playerGui.ChildAdded:Connect(function(child)
+	if child.Name == screenGui.Name then
+		child.Parent = playerGui
+	end
+end)
